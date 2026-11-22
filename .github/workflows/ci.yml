@@ -1,0 +1,29 @@
+# A simple CI check that runs on GitHub every time you push.
+# It does NOT connect to Snowflake (no secrets needed) - it just makes sure
+# the Python code is valid and the data generator still works.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check Python syntax
+        run: python -m py_compile scripts/*.py data_generator/*.py
+
+      - name: Run the data generator
+        run: |
+          python data_generator/generate_data.py
+          ls -l data/
